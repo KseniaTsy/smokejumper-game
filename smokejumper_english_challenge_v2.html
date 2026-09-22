@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokejumper English Challenge</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f4f7fb;
+    color: #243447;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 22px 16px 40px;
+  }
+  h1 {
+    margin: 0 0 6px;
+    font-size: clamp(28px, 6vw, 44px);
+  }
+  .subtitle { margin: 0 0 18px; color: #5d6b78; }
+  .card {
+    background: white;
+    border: 1px solid #dce4ec;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.06);
+  }
+  .topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .progress {
+    height: 10px;
+    background: #e8edf3;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: #7c8cff;
+    transition: width .25s;
+  }
+  .type {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #5b63a7;
+    margin-bottom: 10px;
+  }
+  .question {
+    font-size: clamp(21px, 4.8vw, 29px);
+    line-height: 1.35;
+    margin: 0 0 20px;
+  }
+  .answers {
+    display: grid;
+    gap: 12px;
+  }
+  button.answer, .next, .restart {
+    width: 100%;
+    border: 0;
+    border-radius: 13px;
+    padding: 15px 16px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+  }
+  button.answer {
+    background: #f1f4f8;
+    border: 2px solid transparent;
+  }
+  button.answer:hover { border-color: #aab5ff; }
+  button.answer.correct { background: #dff5e5; border-color: #65b879; }
+  button.answer.wrong { background: #fde4e4; border-color: #df7777; }
+  button.answer:disabled { cursor: default; }
+  .feedback {
+    min-height: 28px;
+    margin: 18px 0 12px;
+    font-weight: 700;
+  }
+  .next, .restart {
+    text-align: center;
+    background: #7c8cff;
+    color: white;
+    font-weight: 700;
+  }
+  .next[hidden], .restart[hidden] { display: none; }
+  .hint {
+    margin-top: 10px;
+    color: #697784;
+    font-size: 14px;
+  }
+  .result {
+    text-align: center;
+  }
+  .score {
+    font-size: 54px;
+    font-weight: 800;
+    margin: 10px 0;
+  }
+  .result p { font-size: 19px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🚒 Smokejumper English Challenge</h1>
+  <p class="subtitle">Choose the best answer. Read carefully — the answers are mixed!</p>
+
+  <div class="card" id="game">
+    <div class="topline">
+      <span id="counter">Question 1 of 15</span>
+      <span id="score">Score: 0</span>
+    </div>
+    <div class="progress"><div id="bar"></div></div>
+
+    <div id="questionArea">
+      <div class="type" id="type"></div>
+      <h2 class="question" id="question"></h2>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next" id="next" hidden>Next question →</button>
+      <div class="hint">💡 One answer is correct.</div>
+    </div>
+  </div>
+
+  <div class="card result" id="result" hidden>
+    <h2>🎉 Challenge complete!</h2>
+    <div class="score" id="finalScore"></div>
+    <p id="finalText"></p>
+    <button class="restart" id="restart">Play again</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    type: "Choose the meaning",
+    q: "What is a <b>smokejumper</b>?",
+    options: [
+      "A firefighter who parachutes into areas to fight wildfires",
+      "A person who repairs cars",
+      "A pilot who flies only at night",
+      "A person who teaches people to swim"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "A <b>padded jump jacket</b> is a jacket that is…",
+    options: [
+      "made only for very hot weather",
+      "soft and protective for a jump",
+      "used for swimming",
+      "worn only at home"
+    ],
+    answer: 1
+  },
+  {
+    type: "Complete the sentence",
+    q: "Smokejumpers often work <b>___</b>, far from towns and cities.",
+    options: [
+      "in remote areas",
+      "in shopping centres",
+      "at school",
+      "in a kitchen"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "If you are <b>very fit</b>, you are…",
+    options: [
+      "good at drawing",
+      "physically strong and healthy",
+      "always tired",
+      "afraid of exercise"
+    ],
+    answer: 1
+  },
+  {
+    type: "Complete the sentence",
+    q: "A firefighter's <b>duty</b> is something they…",
+    options: [
+      "have to do as part of their job",
+      "do only on holiday",
+      "buy in a shop",
+      "wear on their head"
+    ],
+    answer: 0
+  },
+  {
+    type: "Complete the sentence",
+    q: "When smokejumpers <b>get to work</b>, they…",
+    options: [
+      "start doing their job",
+      "go home immediately",
+      "stop the training",
+      "have a long sleep"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "What does <b>know-how</b> mean?",
+    options: [
+      "practical knowledge of how to do something",
+      "a type of uniform",
+      "a dangerous fire",
+      "a place in a forest"
+    ],
+    answer: 0
+  },
+  {
+    type: "Complete the sentence",
+    q: "Smokejumpers must be ready to work <b>___</b>.",
+    options: [
+      "in difficult conditions",
+      "in a quiet cinema",
+      "on a sunny beach only",
+      "in a school library"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the best word",
+    q: "Regular training can <b>___</b> a firefighter's skills.",
+    options: [
+      "improve",
+      "hide",
+      "break",
+      "forget"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "What is a <b>fire shelter</b>?",
+    options: [
+      "protective equipment used in a wildfire emergency",
+      "a small hotel for firefighters",
+      "a place where people cook food",
+      "a machine that starts a fire"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "Which word means things such as hammers, axes and saws used to do a job?",
+    options: [
+      "tools",
+      "duty",
+      "areas",
+      "conditions"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the meaning",
+    q: "Which word means all the special things and machines needed for a job?",
+    options: [
+      "equipment",
+      "know-how",
+      "duty",
+      "shelter"
+    ],
+    answer: 0
+  },
+  {
+    type: "Complete the sentence",
+    q: "Smokejumpers use special <b>equipment</b> because their work can be…",
+    options: [
+      "dangerous and difficult",
+      "easy and boring",
+      "quiet and comfortable",
+      "short and funny"
+    ],
+    answer: 0
+  },
+  {
+    type: "Choose the best word",
+    q: "A smokejumper has good practical <b>___</b> about fighting wildfires.",
+    options: [
+      "know-how",
+      "shelter",
+      "jacket",
+      "area"
+    ],
+    answer: 0
+  },
+  {
+    type: "Mixed review",
+    q: "Which sentence is correct?",
+    options: [
+      "Smokejumpers work in remote areas and in difficult conditions.",
+      "Smokejumpers work only in comfortable offices.",
+      "A fire shelter is a kind of school equipment.",
+      "To be very fit means to be very sleepy."
+    ],
+    answer: 0
+  }
+];
+
+let index = 0;
+let score = 0;
+let locked = false;
+
+const counter = document.getElementById("counter");
+const scoreEl = document.getElementById("score");
+const bar = document.getElementById("bar");
+const typeEl = document.getElementById("type");
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const feedback = document.getElementById("feedback");
+const nextBtn = document.getElementById("next");
+const game = document.getElementById("game");
+const result = document.getElementById("result");
+const finalScore = document.getElementById("finalScore");
+const finalText = document.getElementById("finalText");
+const restartBtn = document.getElementById("restart");
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showQuestion() {
+  locked = false;
+  const item = questions[index];
+  counter.textContent = `Question ${index + 1} of ${questions.length}`;
+  scoreEl.textContent = `Score: ${score}`;
+  bar.style.width = `${(index / questions.length) * 100}%`;
+  typeEl.textContent = item.type;
+  questionEl.innerHTML = item.q;
+  answersEl.innerHTML = "";
+  feedback.textContent = "";
+  nextBtn.hidden = true;
+
+  const prepared = item.options.map((text, originalIndex) => ({
+    text, correct: originalIndex === item.answer
+  }));
+
+  shuffle(prepared).forEach((opt) => {
+    const btn = document.createElement("button");
+    btn.className = "answer";
+    btn.innerHTML = opt.text;
+    btn.addEventListener("click", () => choose(btn, opt.correct));
+    answersEl.appendChild(btn);
+  });
+}
+
+function choose(button, correct) {
+  if (locked) return;
+  locked = true;
+
+  document.querySelectorAll(".answer").forEach(b => b.disabled = true);
+
+  if (correct) {
+    score++;
+    button.classList.add("correct");
+    feedback.textContent = "✅ Correct!";
+  } else {
+    button.classList.add("wrong");
+    feedback.textContent = "❌ Not quite. The correct answer is highlighted.";
+    document.querySelectorAll(".answer").forEach(b => {
+      const text = b.textContent.trim();
+      const item = questions[index];
+      if (text === item.options[item.answer].trim()) {
+        b.classList.add("correct");
+      }
+    });
+  }
+
+  scoreEl.textContent = `Score: ${score}`;
+  nextBtn.hidden = false;
+}
+
+nextBtn.addEventListener("click", () => {
+  index++;
+  if (index < questions.length) {
+    showQuestion();
+  } else {
+    game.hidden = true;
+    result.hidden = false;
+    bar.style.width = "100%";
+    finalScore.textContent = `${score} / ${questions.length}`;
+    const percent = Math.round(score / questions.length * 100);
+    if (percent >= 90) {
+      finalText.textContent = "Excellent! You know the smokejumper vocabulary very well. 🚒";
+    } else if (percent >= 70) {
+      finalText.textContent = "Great job! You know most of the vocabulary. 💪";
+    } else if (percent >= 50) {
+      finalText.textContent = "Good try! A little more practice and you will know the words better. 📚";
+    } else {
+      finalText.textContent = "Keep practising! Try the challenge again and look carefully at the sentences. 🌟";
+    }
+  }
+});
+
+restartBtn.addEventListener("click", () => {
+  index = 0;
+  score = 0;
+  result.hidden = true;
+  game.hidden = false;
+  showQuestion();
+});
+
+showQuestion();
+</script>
+</body>
+</html>
