@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smokejumper English Challenge</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6fa;color:#172033}
+.wrap{max-width:900px;margin:0 auto;padding:28px 18px 40px}.hero{background:#172033;color:#fff;border-radius:20px;padding:28px;margin-bottom:18px}
+h1{margin:0 0 8px;font-size:clamp(28px,5vw,44px)}h2{margin-top:0}.muted{color:#64748b}.hero .muted{color:#d6dce6}
+.card{background:#fff;border:1px solid #dbe2ea;border-radius:18px;padding:22px;margin:16px 0}
+.progress{height:10px;background:#e6eaf0;border-radius:20px;overflow:hidden}.bar{height:100%;width:0;background:#7c3aed;transition:.25s}
+button{border:0;border-radius:12px;padding:12px 17px;font-size:16px;font-weight:700;cursor:pointer;margin:6px 4px 0 0}
+.primary{background:#7c3aed;color:#fff}.secondary{background:#eef0f5;color:#172033}
+.option{display:block;width:100%;text-align:left;background:#f8fafc;border:1px solid #dbe2ea}
+.option.correct{background:#dcfce7;border-color:#22c55e}.option.wrong{background:#fee2e2;border-color:#ef4444}
+input{font-size:17px;padding:12px;border:1px solid #cbd5e1;border-radius:10px;width:100%;max-width:560px}
+.feedback{font-weight:700;margin-top:12px;min-height:24px}.score{font-size:22px;font-weight:800}
+.tag{display:inline-block;padding:6px 9px;border-radius:9px;background:#f1f5f9;margin:3px;font-size:14px}
+.center{text-align:center}.hide{display:none}.mission{font-size:18px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<div style="font-size:14px;font-weight:700">🔥 ENGLISH • GRADE 7</div>
+<h1>Smokejumper English Challenge</h1>
+<p class="muted">Vocabulary mission: learn, choose, match and survive the wildfire challenge!</p>
+</section>
+
+<div class="card">
+<h2>Mission briefing</h2>
+<p>Today you will practise these words and phrases:</p>
+<div>
+<span class="tag">padded jump jacket</span><span class="tag">smokejumper</span><span class="tag">to be very fit</span>
+<span class="tag">in remote areas</span><span class="tag">duty</span><span class="tag">get to work</span>
+<span class="tag">know-how</span><span class="tag">in difficult conditions</span><span class="tag">improve</span>
+<span class="tag">fire shelter</span><span class="tag">tools</span><span class="tag">equipment</span>
+</div>
+<button class="primary" id="start">Start mission 🚁</button>
+</div>
+
+<div id="game" class="hide">
+<div class="card">
+<div style="display:flex;justify-content:space-between;gap:10px">
+<b id="stage">Question 1 / 15</b><span class="score" id="score">⭐ 0</span>
+</div>
+<div class="progress" style="margin-top:12px"><div class="bar" id="bar"></div></div>
+<div id="question" style="margin-top:20px"></div>
+<div id="feedback" class="feedback"></div>
+<div id="actions"></div>
+</div>
+</div>
+
+<div id="result" class="card center hide"></div>
+</div>
+
+<script>
+const items=[
+{q:"A smokejumper is a firefighter who…",a:["jumps from an aircraft to reach wildfires","works in a shop","drives a bus"],c:0},
+{q:"“To be very fit” means…",a:["to be physically strong and healthy","to be very sleepy","to be very young"],c:0},
+{q:"“In remote areas” means…",a:["in places far from towns and cities","in the middle of a school","near a supermarket"],c:0},
+{q:"A “fire shelter” is…",a:["a protective shelter used during a wildfire","a place for storing food","a firefighter's office"],c:0},
+{q:"“Equipment” means…",a:["the things needed for a particular job","a type of weather","a dangerous animal"],c:0},
+{q:"“Tools” are…",a:["things used to do a job","people who need help","places far away"],c:0},
+{q:"“Duty” means…",a:["a responsibility or task","a piece of clothing","a kind of aircraft"],c:0},
+{q:"“Get to work” means…",a:["start working","go home","take a holiday"],c:0},
+{q:"“Know-how” means…",a:["practical knowledge of how to do something","a special jacket","a fire shelter"],c:0},
+{q:"Smokejumpers may work…",a:["in difficult conditions","only in comfortable offices","only at night"],c:0},
+{q:"To “improve” means…",a:["to become better","to become smaller","to stop"],c:0},
+{q:"A padded jump jacket is worn for…",a:["protection during a jump","swimming","cooking"],c:0},
+{q:"Complete: Smokejumpers need to be very ____.",a:["fit","remote","duty"],c:0},
+{q:"Complete: Firefighters use special ____ to do their job.",a:["tools and equipment","remote areas","duties"],c:0},
+{q:"Complete: Smokejumpers often work ____.",a:["in remote areas","at the cinema","in a swimming pool"],c:0}
+];
+let i=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function showGame(){ $("game").classList.remove("hide"); $("start").style.display="none"; render(); }
+$("start").onclick=showGame;
+function render(){
+ answered=false;
+ const x=items[i];
+ $("stage").textContent=`Question ${i+1} / ${items.length}`;
+ $("score").textContent=`⭐ ${score}`;
+ $("bar").style.width=((i)/items.length*100)+"%";
+ $("feedback").textContent="";
+ $("actions").innerHTML="";
+ $("question").innerHTML=`<div class="mission"><b>${x.q}</b></div>`+
+ x.a.map((a,n)=>`<button class="option" data-n="${n}">${a}</button>`).join("");
+ document.querySelectorAll(".option").forEach(b=>b.onclick=()=>answer(+b.dataset.n));
+}
+function answer(n){
+ if(answered)return; answered=true;
+ const x=items[i], buttons=document.querySelectorAll(".option");
+ buttons.forEach(b=>b.disabled=true);
+ if(n===x.c){score++;buttons[n].classList.add("correct");$("feedback").textContent="✅ Correct!";}
+ else{buttons[n].classList.add("wrong");buttons[x.c].classList.add("correct");$("feedback").textContent="❌ Not quite. The correct answer is highlighted.";}
+ $("score").textContent=`⭐ ${score}`;
+ const b=document.createElement("button");b.className="primary";b.textContent=i===items.length-1?"See result →":"Next →";
+ b.onclick=()=>{i++; if(i<items.length)render(); else finish();}; $("actions").appendChild(b);
+}
+function finish(){
+ $("bar").style.width="100%";
+ let title=score>=13?"🔥 Smokejumper Expert!":score>=10?"👏 Excellent work!":score>=7?"👍 Good job!":"💪 Keep practising!";
+ $("result").classList.remove("hide");
+ $("result").innerHTML=`<div style="font-size:48px">${score>=10?"🏆":"🔥"}</div><h2>${title}</h2><p style="font-size:28px;font-weight:800">${score} / ${items.length}</p><p>${score>=13?"You know the vocabulary really well!":score>=10?"Great vocabulary knowledge.":score>=7?"You have a good base — practise the words you missed.":"Let's practise the vocabulary again and try once more."}</p><button class="primary" onclick="restart()">Play again</button>`;
+ $("game").classList.add("hide");
+}
+function restart(){i=0;score=0;$("result").classList.add("hide");$("game").classList.remove("hide");render();}
+</script>
+</body>
+</html>
